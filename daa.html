@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Overlap Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef5ff;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    h2 {
+      color: #222;
+      text-align: center;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: inline-block;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 8px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 15px;
+      margin-top: 8px;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-size: 16px;
+      color: #007bff;
+    }
+
+    .interval-list {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Check 3+ Interval Overlap</h2>
+    
+    <p><strong>Enter an interval:</strong></p>
+    <div class="input-row">
+      <input type="number" id="startInput" placeholder="Start">
+      <input type="number" id="endInput" placeholder="End">
+    </div>
+    <button onclick="addInterval()">Add Interval</button>
+
+    <div class="interval-list" id="intervalList"></div>
+
+    <button onclick="checkOverlap()">Check Overlap</button>
+
+    <div class="result" id="resultBox"></div>
+  </div>
+
+  <script>
+    let addedIntervals = [];
+
+    function addInterval() {
+      const start = parseInt(document.getElementById("startInput").value);
+      const end = parseInt(document.getElementById("endInput").value);
+      if (isNaN(start) || isNaN(end) || start >= end) {
+        alert("Please enter valid start < end values.");
+        return;
+      }
+
+      addedIntervals.push([start, end]);
+      updateIntervalList();
+      document.getElementById("startInput").value = '';
+      document.getElementById("endInput").value = '';
+    }
+
+    function updateIntervalList() {
+      const listDiv = document.getElementById("intervalList");
+      listDiv.innerHTML = "Intervals: " + addedIntervals.map(i => `[${i[0]},${i[1]}]`).join(", ");
+    }
+
+    function checkOverlap() {
+      if (addedIntervals.length < 3) {
+        document.getElementById("resultBox").textContent = "❌ Enter at least 3 intervals.";
+        return;
+      }
+
+      const events = [];
+      addedIntervals.forEach(([start, end]) => {
+        events.push({ time: start, type: 'start' });
+        events.push({ time: end, type: 'end' });
+      });
+
+      events.sort((a, b) => a.time - b.time || (a.type === 'start' ? -1 : 1));
+
+      let active = 0, overlapPoint = null;
+
+      for (let e of events) {
+        if (e.type === 'start') active++;
+        else active--;
+
+        if (active >= 3) {
+          overlapPoint = e.time;
+          break;
+        }
+      }
+
+      document.getElementById("resultBox").textContent =
+        overlapPoint !== null
+          ? `✅ At least 3 intervals overlap at or after point: ${overlapPoint}`
+          : "❌ No point where 3 or more intervals overlap.";
+    }
+  </script>
+
+</body>
+</html>
